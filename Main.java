@@ -9,8 +9,8 @@ public class Main {
         Scanner scanner = new Scanner(System.in);
 
         //Supposed there are 2 teams competing with each others.
-        Team team1 = new Team("Team 1", new ArrayList<Player>());
-        Team team2 = new Team("Team 2", new ArrayList<Player>());
+        Team team1 = new Team("Team 1", new ArrayList<>());
+        Team team2 = new Team("Team 2", new ArrayList<>());
 
         Team[] teams = {team1, team2};
         while (true) {
