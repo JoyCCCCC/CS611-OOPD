@@ -1,6 +1,6 @@
 public class Tile {
     private Piece piece; // Represents the piece on the tile
-    private String position; // The number shown when the tile is empty
+    private String position; // The number, space or dot shown when the tile is empty.
 
     public Tile(String position) {
         this.piece = null; // Initially no piece on the tile

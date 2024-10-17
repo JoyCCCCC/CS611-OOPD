@@ -7,7 +7,7 @@ public class Player {
     private boolean won;  // Record whether the player won a specific game.
     private boolean draw; // Record whether the player had a draw.
     private int x, y;
-    private int wallnumber;
+    private int wallNumber;
 
 
     public Player(Piece symbol, Team team, Integer playerNumber) {
@@ -18,7 +18,7 @@ public class Player {
         this.draw = false;
         this.x = -1;
         this.y = -1;
-        this.wallnumber = 0;
+        this.wallNumber = 0;
     }
 
     //get the piece type player chooses
@@ -95,13 +95,13 @@ public class Player {
         this.y = newY;
     }
 
-    public int getWallnumber() {
-        return wallnumber;
+    public int getWallNumber() {
+        return wallNumber;
     }
-    public void incrementWallnumber() {
-        if (wallnumber < 10) {
-            wallnumber++;
-            System.out.println("You have " + (10 - wallnumber) + " walls left to place.");
+    public void incrementWallNumber() {
+        if (wallNumber < 10) {
+            wallNumber++;
+            System.out.println("You have " + (10 - wallNumber) + " walls left to place.");
         } else {
             System.out.println("You have no walls left to place.");
         }

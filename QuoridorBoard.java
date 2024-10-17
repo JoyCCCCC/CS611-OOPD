@@ -1,13 +1,13 @@
 import java.util.LinkedList;
 import java.util.Queue;
 
-public class QuoridorBoard {
+public class QuoridorBoard{
     private final int size = 9;
-    private char[][] board;
+    private Tile[][] board;
     private Wall[][] walls;
 
     public QuoridorBoard() {
-        board = new char[size * 2 - 1][size * 2 - 1];
+        board = new Tile[size * 2 - 1][size * 2 - 1];
         walls = new Wall[size * 2 - 1][size * 2 - 1];
         initializeBoard();
     }
@@ -16,21 +16,25 @@ public class QuoridorBoard {
         for (int i = 0; i < size * 2 - 1; i++) {
             for (int j = 0; j < size * 2 - 1; j++) {
                 if (i % 2 == 0 && j % 2 == 0) {
-                    board[i][j] = '.';
+                    board[i][j] = new Tile(".");
                 } else {
-                    board[i][j] = ' ';
+                    board[i][j] = new Tile(" ");
                 }
             }
         }
     }
 
-    public void placePlayer(int x, int y, char player) {
-        board[x * 2][y * 2] = player;
+    public void placePlayer(int x, int y, Piece piece) {
+        if(piece.getName().equals(".")){
+            board[x * 2][y * 2] = new Tile(".");
+        } else {
+            board[x * 2][y * 2].setPiece(piece);
+        }
     }
 
-    public boolean placeHorizontalWall(int x, int y, int player1X, int player1Y, int player2X, int player2Y) {
-        int boardX = x * 2 + 1;
-        int boardY = y * 2;
+    public boolean placeHorizontalWall(Wall wall, int player1X, int player1Y, int player2X, int player2Y) {
+        int boardX = wall.getWallX() * 2 + 1;
+        int boardY = wall.getWallY() * 2;
         if (isOutOfBounds(boardX, boardY) || isOutOfBounds(boardX, boardY + 2)) {
             return false;
         }
@@ -38,28 +42,28 @@ public class QuoridorBoard {
             return false;
         }
         // Put a temp wall
-        walls[boardX][boardY] = new Wall("-");
-        walls[boardX][boardY + 2] = new Wall("-");
-        board[boardX][boardY] = '-';
-        board[boardX][boardY + 1] = '-';
-        board[boardX][boardY + 2] = '-';
+        walls[boardX][boardY] = wall;
+        walls[boardX][boardY + 2] = wall;
+        board[boardX][boardY].setPiece(wall);
+        board[boardX][boardY + 1].setPiece(wall);
+        board[boardX][boardY + 2].setPiece(wall);
 
 
         if (!hasPathToGoal(player1X, player1Y, player2X, player2Y)) {
             // No path, drawback
             walls[boardX][boardY] = null;
             walls[boardX][boardY + 2] = null;
-            board[boardX][boardY] = ' ';
-            board[boardX][boardY + 1] = ' ';
-            board[boardX][boardY + 2] = ' ';
+            board[boardX][boardY] = new Tile(" ");
+            board[boardX][boardY + 1] = new Tile(" ");
+            board[boardX][boardY + 2] = new Tile(" ");
             return false;
         }
         return true;
     }
 
-    public boolean placeVerticalWall(int x, int y, int player1X, int player1Y, int player2X, int player2Y) {
-        int boardX = x * 2;
-        int boardY = y * 2 + 1;
+    public boolean placeVerticalWall(Wall wall, int player1X, int player1Y, int player2X, int player2Y) {
+        int boardX = wall.getWallX() * 2;
+        int boardY = wall.getWallY() * 2 + 1;
         if (isOutOfBounds(boardX, boardY) || isOutOfBounds(boardX + 2, boardY)) {
             return false;
         }
@@ -67,20 +71,20 @@ public class QuoridorBoard {
             return false;
         }
         // Put a temp wall
-        walls[boardX][boardY] = new Wall("|");
-        walls[boardX + 2][boardY] = new Wall("|");
-        board[boardX][boardY] = '|';
-        board[boardX + 1][boardY] = '|';
-        board[boardX + 2][boardY] = '|';
+        walls[boardX][boardY] = wall;
+        walls[boardX + 2][boardY] = wall;
+        board[boardX][boardY].setPiece(wall);
+        board[boardX + 1][boardY].setPiece(wall);
+        board[boardX + 2][boardY].setPiece(wall);
 
         // 检查路径
         if (!hasPathToGoal(player1X, player1Y, player2X, player2Y)) {
             // No path, drawback
             walls[boardX][boardY] = null;
             walls[boardX + 2][boardY] = null;
-            board[boardX][boardY] = ' ';
-            board[boardX + 1][boardY] = ' ';
-            board[boardX + 2][boardY] = ' ';
+            board[boardX][boardY] = new Tile(" ");
+            board[boardX + 1][boardY] = new Tile(" ");
+            board[boardX + 2][boardY] = new Tile(" ");
             return false;
         }
         return true;
@@ -107,7 +111,7 @@ public class QuoridorBoard {
             }
 
             for (int j = 0; j < size * 2 - 1; j++) {
-                System.out.print(board[i][j] + " ");
+                System.out.print(board[i][j].getPieceName() + " ");
             }
             System.out.println();
         }
@@ -131,22 +135,7 @@ public class QuoridorBoard {
             }
             return false;
         }
-        if (startX == endX) {
-            if (startY < endY && walls[startX * 2][startY * 2 + 1] != null) {
-                return false;
-            }
-            if (startY > endY && walls[startX * 2][startY * 2 - 1] != null) {
-                return false;
-            }
-        } else {
-            if (startX < endX && walls[startX * 2 + 1][startY * 2] != null) {
-                return false;
-            }
-            if (startX > endX && walls[startX * 2 - 1][startY * 2] != null) {
-                return false;
-            }
-        }
-        return true;
+        return !isBlockedByWall(startX, startY, endX, endY);
     }
 
     private boolean isBlockedByWall(int startX, int startY, int endX, int endY) {

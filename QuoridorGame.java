@@ -25,8 +25,8 @@ public class QuoridorGame extends TicTacToeGame {
             player1.move(0, 4);
             player2.move(8, 4);
 
-            board.placePlayer(player1.getX(), player1.getY(), player1.getSymbol().getName().charAt(0));
-            board.placePlayer(player2.getX(), player2.getY(), player2.getSymbol().getName().charAt(0));
+            board.placePlayer(player1.getX(), player1.getY(), player1.getSymbol());
+            board.placePlayer(player2.getX(), player2.getY(), player2.getSymbol());
             board.display();
 
             Player firstPlayer = startFirst();
@@ -81,31 +81,43 @@ public class QuoridorGame extends TicTacToeGame {
         }
         boolean validMove = false;
         while (!validMove) {
-            System.out.println("Player " + player.getSymbol().getName() + "'s turn. Enter move (w/s/a/d) or wall (h/v x y):");
+            System.out.println("Player " + player.getPlayerNumber() + "'s turn. Enter move (w/s/a/d) or wall (h/v x y), note that the coordinates represent the leftmost or topmost endpoint of the wall:");
             String input = scanner.nextLine();
             String[] parts = input.split(" ");
             // "h" stands for horizontal, "v" stands for vertical
             if (parts[0].equals("h") || parts[0].equals("v")) {
-                if (player.getWallnumber() >= 10) {
+                if (player.getWallNumber() >= 10) {
                     System.out.println("You have no walls left to place.");
                     continue;
                 }
+                Wall wall;
+                if(parts[0].equals("h")){
+                    wall = new Wall("-");
+                    wall.setHorizontal(true);
+                } else {
+                    wall = new Wall("|");
+                    wall.setVertical(true);
+                }
+
                 int x = Integer.parseInt(parts[1]) - 1;
                 int y = Integer.parseInt(parts[2]) - 1;
+                wall.setX(x);
+                wall.setY(y);
+
                 boolean wallPlaced = false;
-                if (parts[0].equals("h")) {
-                    wallPlaced = board.placeHorizontalWall(x, y, player1.getX(), player1.getY(), player2.getX(), player2.getY());
-                } else if (parts[0].equals("v")) {
-                    wallPlaced = board.placeVerticalWall(x, y, player1.getX(), player1.getY(), player2.getX(), player2.getY());
+                if (wall.getHorizontal()) {
+                    wallPlaced = board.placeHorizontalWall(wall, player1.getX(), player1.getY(), player2.getX(), player2.getY());
+                } else if (wall.getVertical()) {
+                    wallPlaced = board.placeVerticalWall(wall, player1.getX(), player1.getY(), player2.getX(), player2.getY());
                 }
                 if (wallPlaced) {
                     System.out.println((parts[0].equals("h") ? "Horizontal" : "Vertical") + " wall placed.");
-                    player.incrementWallnumber();
+                    player.incrementWallNumber();
                     validMove = true;
                 } else {
                     System.out.println("Invalid wall placement.");
                 }
-            } else {
+            } else if(parts[0].equals("w") || parts[0].equals("a") || parts[0].equals("s") || parts[0].equals("d")) {
                 int newX = player.getX();
                 int newY = player.getY();
                 switch (parts[0]) {
@@ -132,14 +144,17 @@ public class QuoridorGame extends TicTacToeGame {
                     if (attemptJump(player, opponent, newX, newY)) {
                         validMove = true;
                     } else {
-                        board.placePlayer(player.getX(), player.getY(), '.');
+                        board.placePlayer(player.getX(), player.getY(), new Piece("."));
                         player.move(newX, newY);
-                        board.placePlayer(newX, newY, player.getSymbol().getName().charAt(0));
+                        board.placePlayer(newX, newY, player.getSymbol());
                         validMove = true;
                     }
                 } else {
                     System.out.println("Invalid move.");
                 }
+            } else {
+                System.out.println("Invalid input. Please enter again!");
+                continue;
             }
             board.display();
         }
@@ -150,9 +165,9 @@ public class QuoridorGame extends TicTacToeGame {
             int jumpX = newX + (newX - player.getX());
             int jumpY = newY + (newY - player.getY());
             if (board.isValidMove(opponent.getX(), opponent.getY(), jumpX, jumpY, player.getX(), player.getY())) {
-                board.placePlayer(player.getX(), player.getY(), '.');
+                board.placePlayer(player.getX(), player.getY(), new Piece("."));
                 player.move(jumpX, jumpY);
-                board.placePlayer(jumpX, jumpY, player.getSymbol().getName().charAt(0));
+                board.placePlayer(jumpX, jumpY, player.getSymbol());
                 return true;
             } else {
                 // Try to jump to another board
@@ -174,21 +189,21 @@ public class QuoridorGame extends TicTacToeGame {
 
                 // choose right direction until find a right place
                 while (true) {
-                    System.out.println("Choose jump direction (l for left, r for right):");
+                    System.out.println("Choose jump direction (l for left or down, r for right or up):");
                     String direction = scanner.nextLine();
                     // Find left jump or right jump
                     boolean canJumpLeft = board.isValidMove(opponent.getX(), opponent.getY(), leftMoveX, leftMoveY, player.getX(), player.getY());
                     boolean canJumpRight = board.isValidMove(opponent.getX(), opponent.getY(), rightMoveX, rightMoveY, player.getX(), player.getY());
                     // The direction is restricted to left->right board
                     if (direction.equals("l") && canJumpLeft) {
-                        board.placePlayer(player.getX(), player.getY(), '.');
+                        board.placePlayer(player.getX(), player.getY(), new Piece("."));
                         player.move(leftMoveX, leftMoveY);
-                        board.placePlayer(leftMoveX, leftMoveY, player.getSymbol().getName().charAt(0));
+                        board.placePlayer(leftMoveX, leftMoveY, player.getSymbol());
                         return true;
                     } else if (direction.equals("r") && canJumpRight) {
-                        board.placePlayer(player.getX(), player.getY(), '.');
+                        board.placePlayer(player.getX(), player.getY(), new Piece("."));
                         player.move(rightMoveX, rightMoveY);
-                        board.placePlayer(rightMoveX, rightMoveY, player.getSymbol().getName().charAt(0));
+                        board.placePlayer(rightMoveX, rightMoveY, player.getSymbol());
                         return true;
                     } else if (!canJumpLeft && !canJumpRight) {
                         System.out.println("Both left and right jumps are blocked by walls. Please choose another move.");
