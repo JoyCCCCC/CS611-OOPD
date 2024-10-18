@@ -2,8 +2,7 @@ import java.util.Scanner;
 
 public class QuoridorGame extends TicTacToeGame {
     private QuoridorBoard board;
-    private Player player1;
-    private Player player2;
+    private Player[] players;
     private Scanner scanner;
     private String response;
 
@@ -15,20 +14,26 @@ public class QuoridorGame extends TicTacToeGame {
 
     public void start() {
         boolean keepPlaying = true;
-        while(keepPlaying) {
-            player1 = inputPlayer(0);
-            player2 = inputPlayer(1);
+        while (keepPlaying) {
+            int playerCount = choosePlayerCount();
+            players = new Player[playerCount];
 
-            player1.setSymbol(new Piece("A"));
-            player2.setSymbol(new Piece("B"));
+            for (int i = 0; i < playerCount; i++) {
+                players[i] = inputPlayer(i);
+                players[i].setSymbol(new Piece(String.valueOf((char) ('A' + i))));
+                if (playerCount == 4) {
+                    players[i].setWallNumber(5); // five walls for four players
+                } else {
+                    players[i].setWallNumber(10); // Ten walls for two players
+                }
+            }
 
-            player1.move(0, 4);
-            player2.move(8, 4);
+            initializePlayers();
 
-            board.placePlayer(player1.getX(), player1.getY(), player1.getSymbol());
-            board.placePlayer(player2.getX(), player2.getY(), player2.getSymbol());
-
-            System.out.println("Quoridor Game starts! \"A\" represents team 1 and \"B\" represents team 2.");
+            System.out.println("Quoridor Game starts!");
+            for (int i = 0; i < playerCount; i++) {
+                System.out.println("\"" + players[i].getSymbol().getName() + "\" represents team " + (i + 1));
+            }
             board.display();
 
             Player firstPlayer = startFirst();
@@ -39,8 +44,7 @@ public class QuoridorGame extends TicTacToeGame {
                     playerWins(currentPlayer);
                     break;
                 }
-                // switch to another player
-                currentPlayer = switchPlayer(currentPlayer,player1,player2);
+                currentPlayer = switchPlayer(currentPlayer);
             }
             printSummary();
 
@@ -48,176 +52,198 @@ public class QuoridorGame extends TicTacToeGame {
             do {
                 response = scanner.next();
                 keepPlaying = response.equalsIgnoreCase("Y");
-            } while(!(response.equalsIgnoreCase("Y")) && !(response.equalsIgnoreCase("N")));
+            } while (!(response.equalsIgnoreCase("Y")) && !(response.equalsIgnoreCase("N")));
 
-            // if continue the game, reset the board
             if (keepPlaying) {
                 this.board = new QuoridorBoard();
             }
         }
-        //Reset all teams statistics when player change the game.
         resetAllTeamsStatistics();
     }
-
+    // Choose the number of player(2 or 4)
+    private int choosePlayerCount() {
+        int playerCount = 0;
+        boolean validInput = false;
+        while (!validInput) {
+            System.out.println("Choose number of players (2 or 4):");
+            if (scanner.hasNextInt()) {
+                playerCount = scanner.nextInt();
+                if (playerCount == 2 || playerCount == 4) {
+                    validInput = true;
+                } else {
+                    System.out.println("Invalid input. Please enter 2 or 4.");
+                }
+            } else {
+                System.out.println("Invalid input. Please enter a number.");
+                scanner.next();
+            }
+        }
+        return playerCount;
+    }
+    // Set the start point of each player
+    private void initializePlayers() {
+        int[][] startingPositions = {{0, 4}, {8, 4}, {4, 0}, {4, 8}};
+        for (int i = 0; i < players.length; i++) {
+            players[i].move(startingPositions[i][0], startingPositions[i][1]);
+            board.placePlayer(players[i].getX(), players[i].getY(), players[i].getSymbol());
+        }
+    }
+    // Choose the start player
     public Player startFirst() {
         String team;
         do {
-            System.out.println("Please choose which team starts first(input 1 or 2):");
+            System.out.println("Please choose which team starts first (input 1 to " + players.length + "):");
             team = scanner.next();
-        } while (!team.equals("1") && !team.equals("2"));
+        } while (!team.matches("[1-" + players.length + "]"));
 
-        if(team.equals("1")){
-            return player1;
-        }else {
-            return player2;
-        }
+        return players[Integer.parseInt(team) - 1];
     }
-
-    // Input w/a/s/d stands for up/left/down/right
+    // Play turn by turn
     public void playerTurn(Player player) {
-        Player opponent;
-        if (player.equals(player1)){
-            opponent = player2;
-        } else {
-            opponent = player1;
-        }
         boolean validMove = false;
         while (!validMove) {
-            System.out.println("Player " + player.getPlayerNumber() + "'s turn. Enter move (w/s/a/d) or wall (h/v x y):");
+            System.out.println("Player " + player.getSymbol().getName() + "'s turn. Enter move (w/s/a/d) or wall (h/v x y):");
             String input = scanner.next();
-//            String[] parts = input.split(" ");
-            // "h" stands for horizontal, "v" stands for vertical
+
             if (input.equals("h") || input.equals("v")) {
-                int x,y;
+                int x, y;
                 if (scanner.hasNextInt()) {
                     y = scanner.nextInt() - 1;
                     x = scanner.nextInt() - 1;
                 } else {
+                    // Error check
                     System.out.println("Invalid wall placement input.");
-                    continue; // Go back to prompting the user
+                    continue;
                 }
-                if (player.getWallNumber() >= 10) {
+
+                if (player.getWallNumber() <= 0) {
                     System.out.println("You have no walls left to place.");
                     continue;
                 }
-                Wall wall;
-                if(input.equals("h")){
-                    wall = new Wall("-");
-                    wall.setHorizontal(true);
-                } else {
-                    wall = new Wall("|");
-                    wall.setVertical(true);
-                }
-
+                // place the wall
+                Wall wall = new Wall(input.equals("h") ? "-" : "|");
+                wall.setHorizontal(input.equals("h"));
+                wall.setVertical(input.equals("v"));
                 wall.setX(x);
                 wall.setY(y);
 
-                boolean wallPlaced = false;
-                if (wall.getHorizontal()) {
-                    wallPlaced = board.placeHorizontalWall(wall, player1.getX(), player1.getY(), player2.getX(), player2.getY());
-                } else if (wall.getVertical()) {
-                    wallPlaced = board.placeVerticalWall(wall, player1.getX(), player1.getY(), player2.getX(), player2.getY());
-                }
+                boolean wallPlaced = input.equals("h") ? board.placeHorizontalWall(wall, players) : board.placeVerticalWall(wall, players);
+                // Error check
                 if (wallPlaced) {
                     System.out.println((input.equals("h") ? "Horizontal" : "Vertical") + " wall placed.");
-                    player.incrementWallNumber();
+                    player.decrementWallNumber();
                     validMove = true;
                 } else {
                     System.out.println("Invalid wall placement.");
                 }
-            } else if(input.equals("w") || input.equals("a") || input.equals("s") || input.equals("d")) {
+
+            } else if (input.equals("w") || input.equals("a") || input.equals("s") || input.equals("d")) {
                 int newX = player.getX();
                 int newY = player.getY();
-                switch (input) {
-                    case "w":
-                        newX -= 1;
-                        break;
-                    case "s":
-                        newX += 1;
-                        break;
-                    case "a":
-                        newY -= 1;
-                        break;
-                    case "d":
-                        newY += 1;
-                        break;
-                    default:
-                        System.out.println("Invalid move.");
-                        continue;
-                }
 
-                // check if the way is blocked
-                if (board.isValidMove(player.getX(), player.getY(), newX, newY, opponent.getX(), opponent.getY())) {
-                    // if not blocked, then try to jump
-                    if (attemptJump(player, opponent, newX, newY)) {
-                        validMove = true;
-                    } else {
+                switch (input) {
+                    case "w": newX -= 1; break;
+                    case "s": newX += 1; break;
+                    case "a": newY -= 1; break;
+                    case "d": newY += 1; break;
+                    default: System.out.println("Invalid move."); continue;
+                }
+                // If do not need to jump ,the move is valid, continue
+                if (attemptJump(player, newX, newY)) {
+                    validMove = true;
+                } else if (board.isValidMove(player.getX(), player.getY(), newX, newY, players)) {
+                    // If jump logic is applied and valid, move
+                    boolean isOccupied = false;
+                    for (Player other : players) {
+                        if (other != player && other.getX() == newX && other.getY() == newY) {
+                            isOccupied = true;
+                            break;
+                        }
+                    }
+                    // If jump logic is applied and invalid, no not move
+                    if (!isOccupied) {
                         board.placePlayer(player.getX(), player.getY(), new Piece("."));
                         player.move(newX, newY);
                         board.placePlayer(newX, newY, player.getSymbol());
                         validMove = true;
+                    } else {
+                        System.out.println("Invalid move: another player is in the path.");
                     }
                 } else {
                     System.out.println("Invalid move.");
                 }
             } else {
                 System.out.println("Invalid input. Please enter again!");
-                continue;
             }
+
             board.display();
+            displayRemainingWalls();
         }
     }
 
-    public boolean attemptJump(Player player, Player opponent, int newX, int newY) {
-        if (opponent.getX() == newX && opponent.getY() == newY) {
-            int jumpX = newX + (newX - player.getX());
-            int jumpY = newY + (newY - player.getY());
-            if (board.isValidMove(opponent.getX(), opponent.getY(), jumpX, jumpY, player.getX(), player.getY())) {
-                board.placePlayer(player.getX(), player.getY(), new Piece("."));
-                player.move(jumpX, jumpY);
-                board.placePlayer(jumpX, jumpY, player.getSymbol());
-                return true;
-            } else {
-                // Try to jump to another board
-                int leftMoveX;
-                int leftMoveY;
-                int rightMoveX;
-                int rightMoveY;
-                if (newX == player.getX()) {
-                    leftMoveX = opponent.getX() - 1;
-                    leftMoveY = opponent.getY();
-                    rightMoveX = opponent.getX() + 1;
-                    rightMoveY = opponent.getY();
-                } else {
-                    leftMoveX = opponent.getX();
-                    leftMoveY = opponent.getY() - 1;
-                    rightMoveX = opponent.getX();
-                    rightMoveY = opponent.getY() + 1;
-                }
+    // jump logic when get into opponents
+    public boolean attemptJump(Player player, int newX, int newY) {
+        for (Player opponent : players) {
+            if (opponent.getX() == newX && opponent.getY() == newY) {
+                int jumpX = newX + (newX - player.getX());
+                int jumpY = newY + (newY - player.getY());
 
-                // choose right direction until find a right place
-                while (true) {
-                    System.out.println("Choose jump direction (l for left or up, r for right or down):");
-                    String direction = scanner.nextLine();
-                    // Find left jump or right jump
-                    boolean canJumpLeft = board.isValidMove(opponent.getX(), opponent.getY(), leftMoveX, leftMoveY, player.getX(), player.getY());
-                    boolean canJumpRight = board.isValidMove(opponent.getX(), opponent.getY(), rightMoveX, rightMoveY, player.getX(), player.getY());
-                    // The direction is restricted to left->right board
-                    if (direction.equals("l") && canJumpLeft) {
-                        board.placePlayer(player.getX(), player.getY(), new Piece("."));
-                        player.move(leftMoveX, leftMoveY);
-                        board.placePlayer(leftMoveX, leftMoveY, player.getSymbol());
-                        return true;
-                    } else if (direction.equals("r") && canJumpRight) {
-                        board.placePlayer(player.getX(), player.getY(), new Piece("."));
-                        player.move(rightMoveX, rightMoveY);
-                        board.placePlayer(rightMoveX, rightMoveY, player.getSymbol());
-                        return true;
-                    } else if (!canJumpLeft && !canJumpRight) {
-                        System.out.println("Both left and right jumps are blocked by walls. Please choose another move.");
-                        return false;
+                for (Player otherPlayer : players) {
+                    if (otherPlayer != player && otherPlayer != opponent) {
+                        if ((otherPlayer.getX() == jumpX && otherPlayer.getY() == jumpY) ||
+                                (otherPlayer.getX() == newX && otherPlayer.getY() == newY)) {
+                            System.out.println("Invalid jump: another player is in the path.");
+                            return false;
+                        }
+                    }
+                }
+                // Try to jump
+                if (board.isValidMove(opponent.getX(), opponent.getY(), jumpX, jumpY, players)) {
+                    board.placePlayer(player.getX(), player.getY(), new Piece("."));
+                    player.move(jumpX, jumpY);
+                    board.placePlayer(jumpX, jumpY, player.getSymbol());
+                    return true;
+                } else {
+                    int leftMoveX;
+                    int leftMoveY;
+                    int rightMoveX;
+                    int rightMoveY;
+                    if (newX == player.getX()) {
+                        leftMoveX = opponent.getX() - 1;
+                        leftMoveY = opponent.getY();
+                        rightMoveX = opponent.getX() + 1;
+                        rightMoveY = opponent.getY();
                     } else {
-                        System.out.println("Invalid jump direction. Please choose again.");
+                        leftMoveX = opponent.getX();
+                        leftMoveY = opponent.getY() - 1;
+                        rightMoveX = opponent.getX();
+                        rightMoveY = opponent.getY() + 1;
+                    }
+                    // Check whether there is a wall in left and right
+                    boolean canJumpLeft = board.isValidMove(opponent.getX(), opponent.getY(), leftMoveX, leftMoveY, players);
+                    boolean canJumpRight = board.isValidMove(opponent.getX(), opponent.getY(), rightMoveX, rightMoveY, players);
+
+                    if (!canJumpLeft && !canJumpRight) {
+                        System.out.println("Invalid move: both left and right jumps are blocked.");
+                        return false;
+                    }
+                    // Allow to choose lef or right
+                    while (true) {
+                        System.out.println("Choose jump direction (l for left or up, r for right or down):");
+                        String direction = scanner.nextLine();
+                        if (direction.equals("l") && canJumpLeft) {
+                            board.placePlayer(player.getX(), player.getY(), new Piece("."));
+                            player.move(leftMoveX, leftMoveY);
+                            board.placePlayer(leftMoveX, leftMoveY, player.getSymbol());
+                            return true;
+                        } else if (direction.equals("r") && canJumpRight) {
+                            board.placePlayer(player.getX(), player.getY(), new Piece("."));
+                            player.move(rightMoveX, rightMoveY);
+                            board.placePlayer(rightMoveX, rightMoveY, player.getSymbol());
+                            return true;
+                        } else {
+                            System.out.println("Invalid jump direction. Please choose again.");
+                        }
                     }
                 }
             }
@@ -225,25 +251,70 @@ public class QuoridorGame extends TicTacToeGame {
         return false;
     }
 
+    // Check if the piece reaches the destination
     public boolean checkWin(Player player) {
-
         if (player.getSymbol().getName().equals("A") && player.getX() == 8) {
             return true;
         }
-
         if (player.getSymbol().getName().equals("B") && player.getX() == 0) {
             return true;
+        }
+        if (players.length == 4) {
+            if (player.getSymbol().getName().equals("C") && player.getY() == 8) {
+                return true;
+            }
+            if (player.getSymbol().getName().equals("D") && player.getY() == 0) {
+                return true;
+            }
         }
         return false;
     }
 
+    private Player switchPlayer(Player currentPlayer) {
+        int currentIndex = -1;
+        for (int i = 0; i < players.length; i++) {
+            if (players[i].equals(currentPlayer)) {
+                currentIndex = i;
+                break;
+            }
+        }
+        return players[(currentIndex + 1) % players.length];
+    }
+
     public void printSummary() {
+        for (Player player : players) {
+            System.out.println("Player '" + player.getPlayerNumber() + "' plays piece: '" + player.getSymbol().getName() + "' " + (player.hasWon() ? "win" : "lose"));
+        }
         for (Team team : teams) {
             System.out.println("----------------" + team.getName() + "----------------");
-            for (Player player : team.getPlayers()) {
-                System.out.println("Player '" + player.getPlayerNumber() + "' plays piece: '" + player.getSymbol().getName() + "' " + (player.hasWon() ? "win" : "lose"));
-            }
             System.out.println("Total win: " + team.getWinCount());
+        }
+    }
+
+    @Override
+    public Player inputPlayer(int playerIndex) {
+        System.out.println("Enter the current player number (input integer):");
+        while (!scanner.hasNextInt()) {
+            System.out.println("Invalid input. Please enter an integer:");
+            scanner.next();
+        }
+        int playerNumber = scanner.nextInt();
+        Player player = new Player(null, null, 0);
+        player.setPlayerNumber(playerNumber);
+
+        // Assign player to the appropriate team
+        int teamIndex = playerIndex % teams.length;
+        teams[teamIndex].addTeamPlayer(player);
+        player.setTeam(teams[teamIndex]);
+
+        return player;
+    }
+
+    // Display the walls
+    private void displayRemainingWalls() {
+        System.out.println("Remaining walls:");
+        for (Player player : players) {
+            System.out.println("Player " + player.getSymbol().getName() + ": " + player.getWallNumber() + " walls");
         }
     }
 }

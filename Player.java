@@ -98,12 +98,16 @@ public class Player {
     public int getWallNumber() {
         return wallNumber;
     }
+
+    public void setWallNumber(int wallNumber) {
+        this.wallNumber = wallNumber;
+    }
+
     public void incrementWallNumber() {
-        if (wallNumber < 10) {
-            wallNumber++;
-            System.out.println("You have " + (10 - wallNumber) + " walls left to place.");
-        } else {
-            System.out.println("You have no walls left to place.");
-        }
+        wallNumber++;
+    }
+
+    public void decrementWallNumber() {
+        wallNumber--;
     }
 }

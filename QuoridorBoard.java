@@ -1,10 +1,10 @@
 import java.util.LinkedList;
 import java.util.Queue;
 
-public class QuoridorBoard{
+public class QuoridorBoard {
     private final int size = 9;
-    private Tile[][] board;
-    private Wall[][] walls;
+    private final Tile[][] board;
+    private final Wall[][] walls;
 
     public QuoridorBoard() {
         board = new Tile[size * 2 - 1][size * 2 - 1];
@@ -25,14 +25,14 @@ public class QuoridorBoard{
     }
 
     public void placePlayer(int x, int y, Piece piece) {
-        if(piece.getName().equals(".")){
+        if (piece.getName().equals(".")) {
             board[x * 2][y * 2] = new Tile(".");
         } else {
             board[x * 2][y * 2].setPiece(piece);
         }
     }
 
-    public boolean placeHorizontalWall(Wall wall, int player1X, int player1Y, int player2X, int player2Y) {
+    public boolean placeHorizontalWall(Wall wall, Player[] players) {
         int boardX = wall.getWallX() * 2 + 1;
         int boardY = wall.getWallY() * 2;
         if (isOutOfBounds(boardX, boardY) || isOutOfBounds(boardX, boardY + 2)) {
@@ -48,8 +48,7 @@ public class QuoridorBoard{
         board[boardX][boardY + 1].setPiece(wall);
         board[boardX][boardY + 2].setPiece(wall);
 
-
-        if (!hasPathToGoal(player1X, player1Y, player2X, player2Y)) {
+        if (hasPathToGoal(players)) {
             // No path, drawback
             walls[boardX][boardY] = null;
             walls[boardX][boardY + 2] = null;
@@ -61,7 +60,7 @@ public class QuoridorBoard{
         return true;
     }
 
-    public boolean placeVerticalWall(Wall wall, int player1X, int player1Y, int player2X, int player2Y) {
+    public boolean placeVerticalWall(Wall wall, Player[] players) {
         int boardX = wall.getWallX() * 2;
         int boardY = wall.getWallY() * 2 + 1;
         if (isOutOfBounds(boardX, boardY) || isOutOfBounds(boardX + 2, boardY)) {
@@ -77,8 +76,7 @@ public class QuoridorBoard{
         board[boardX + 1][boardY].setPiece(wall);
         board[boardX + 2][boardY].setPiece(wall);
 
-        // 检查路径
-        if (!hasPathToGoal(player1X, player1Y, player2X, player2Y)) {
+        if (hasPathToGoal(players)) {
             // No path, drawback
             walls[boardX][boardY] = null;
             walls[boardX + 2][boardY] = null;
@@ -117,53 +115,65 @@ public class QuoridorBoard{
         }
     }
 
-
     // Determine a move is valid or not
-    public boolean isValidMove(int startX, int startY, int endX, int endY, int opponentX, int opponentY) {
+    public boolean isValidMove(int startX, int startY, int endX, int endY, Player[] players) {
         if (endX < 0 || endX >= size || endY < 0 || endY >= size) {
             return false;
         }
         if (Math.abs(startX - endX) + Math.abs(startY - endY) != 1) {
             // Allow jumping over the opponent
             if (Math.abs(startX - endX) + Math.abs(startY - endY) == 2) {
-                if ((startX == opponentX && Math.abs(startY - opponentY) == 1 && Math.abs(endY - startY) == 2) ||
-                        (startY == opponentY && Math.abs(startX - opponentX) == 1 && Math.abs(endX - startX) == 2)) {
-                    // Check if the target jumping cell is valid
-                    return !isBlockedByWall(startX, startY, opponentX, opponentY) &&
-                            !isBlockedByWall(opponentX, opponentY, endX, endY);
+                for (Player opponent : players) {
+                    int opponentX = opponent.getX();
+                    int opponentY = opponent.getY();
+                    if ((startX == opponentX && Math.abs(startY - opponentY) == 1 && Math.abs(endY - startY) == 2) ||
+                            (startY == opponentY && Math.abs(startX - opponentX) == 1 && Math.abs(endX - startX) == 2)) {
+                        // Check if the target jumping cell is valid
+                        if (isBlockedByWall(startX, startY, opponentX, opponentY) &&
+                                isBlockedByWall(opponentX, opponentY, endX, endY)) {
+                            return true;
+                        }
+                    }
                 }
+                return false;
             }
             return false;
         }
-        return !isBlockedByWall(startX, startY, endX, endY);
+        return isBlockedByWall(startX, startY, endX, endY);
     }
 
     private boolean isBlockedByWall(int startX, int startY, int endX, int endY) {
         // Determine if move between start and end is blocked by a wall
         if (startX == endX) {
             if (startY < endY && walls[startX * 2][startY * 2 + 1] != null) {
-                return true;
+                return false;
             }
             if (startY > endY && walls[startX * 2][startY * 2 - 1] != null) {
-                return true;
+                return false;
             }
         } else {
             if (startX < endX && walls[startX * 2 + 1][startY * 2] != null) {
-                return true;
+                return false;
             }
             if (startX > endX && walls[startX * 2 - 1][startY * 2] != null) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private boolean hasPathToGoal(Player[] players) {
+        for (Player player : players) {
+            int goalX = player.getSymbol().getName().equals("A") || player.getSymbol().getName().equals("B") ? 8 : 0;
+            if (!bfs(player.getX(), player.getY(), goalX, players)) {
                 return true;
             }
         }
         return false;
     }
 
-    private boolean hasPathToGoal(int player1X, int player1Y, int player2X, int player2Y) {
-        return bfs(player1X, player1Y, 8) && bfs(player2X, player2Y, 0);
-    }
-
     // A bfs algo to find a path to the goal
-    private boolean bfs(int startX, int startY, int goalX) {
+    private boolean bfs(int startX, int startY, int goalX, Player[] players) {
         boolean[][] visited = new boolean[size][size];
         Queue<int[]> queue = new LinkedList<>();
         queue.add(new int[]{startX, startY});
@@ -185,7 +195,7 @@ public class QuoridorBoard{
                 int newX = x + dx[i];
                 int newY = y + dy[i];
 
-                if (newX >= 0 && newX < size && newY >= 0 && newY < size && !visited[newX][newY] && isValidMove(x, y, newX, newY,-1,-1)) {
+                if (newX >= 0 && newX < size && newY >= 0 && newY < size && !visited[newX][newY] && isValidMove(x, y, newX, newY, players)) {
                     queue.add(new int[]{newX, newY});
                     visited[newX][newY] = true;
                 }
