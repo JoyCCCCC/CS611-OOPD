@@ -27,6 +27,8 @@ public class QuoridorGame extends TicTacToeGame {
 
             board.placePlayer(player1.getX(), player1.getY(), player1.getSymbol());
             board.placePlayer(player2.getX(), player2.getY(), player2.getSymbol());
+
+            System.out.println("Quoridor Game starts! \"A\" represents team 1 and \"B\" represents team 2.");
             board.display();
 
             Player firstPlayer = startFirst();
@@ -81,17 +83,25 @@ public class QuoridorGame extends TicTacToeGame {
         }
         boolean validMove = false;
         while (!validMove) {
-            System.out.println("Player " + player.getPlayerNumber() + "'s turn. Enter move (w/s/a/d) or wall (h/v x y), note that the coordinates represent the leftmost or topmost endpoint of the wall:");
-            String input = scanner.nextLine();
-            String[] parts = input.split(" ");
+            System.out.println("Player " + player.getPlayerNumber() + "'s turn. Enter move (w/s/a/d) or wall (h/v x y):");
+            String input = scanner.next();
+//            String[] parts = input.split(" ");
             // "h" stands for horizontal, "v" stands for vertical
-            if (parts[0].equals("h") || parts[0].equals("v")) {
+            if (input.equals("h") || input.equals("v")) {
+                int x,y;
+                if (scanner.hasNextInt()) {
+                    y = scanner.nextInt() - 1;
+                    x = scanner.nextInt() - 1;
+                } else {
+                    System.out.println("Invalid wall placement input.");
+                    continue; // Go back to prompting the user
+                }
                 if (player.getWallNumber() >= 10) {
                     System.out.println("You have no walls left to place.");
                     continue;
                 }
                 Wall wall;
-                if(parts[0].equals("h")){
+                if(input.equals("h")){
                     wall = new Wall("-");
                     wall.setHorizontal(true);
                 } else {
@@ -99,8 +109,6 @@ public class QuoridorGame extends TicTacToeGame {
                     wall.setVertical(true);
                 }
 
-                int x = Integer.parseInt(parts[1]) - 1;
-                int y = Integer.parseInt(parts[2]) - 1;
                 wall.setX(x);
                 wall.setY(y);
 
@@ -111,16 +119,16 @@ public class QuoridorGame extends TicTacToeGame {
                     wallPlaced = board.placeVerticalWall(wall, player1.getX(), player1.getY(), player2.getX(), player2.getY());
                 }
                 if (wallPlaced) {
-                    System.out.println((parts[0].equals("h") ? "Horizontal" : "Vertical") + " wall placed.");
+                    System.out.println((input.equals("h") ? "Horizontal" : "Vertical") + " wall placed.");
                     player.incrementWallNumber();
                     validMove = true;
                 } else {
                     System.out.println("Invalid wall placement.");
                 }
-            } else if(parts[0].equals("w") || parts[0].equals("a") || parts[0].equals("s") || parts[0].equals("d")) {
+            } else if(input.equals("w") || input.equals("a") || input.equals("s") || input.equals("d")) {
                 int newX = player.getX();
                 int newY = player.getY();
-                switch (parts[0]) {
+                switch (input) {
                     case "w":
                         newX -= 1;
                         break;
@@ -189,7 +197,7 @@ public class QuoridorGame extends TicTacToeGame {
 
                 // choose right direction until find a right place
                 while (true) {
-                    System.out.println("Choose jump direction (l for left or down, r for right or up):");
+                    System.out.println("Choose jump direction (l for left or up, r for right or down):");
                     String direction = scanner.nextLine();
                     // Find left jump or right jump
                     boolean canJumpLeft = board.isValidMove(opponent.getX(), opponent.getY(), leftMoveX, leftMoveY, player.getX(), player.getY());
