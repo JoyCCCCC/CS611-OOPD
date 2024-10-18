@@ -164,16 +164,28 @@ public class QuoridorBoard {
 
     private boolean hasPathToGoal(Player[] players) {
         for (Player player : players) {
-            int goalX = player.getSymbol().getName().equals("A") || player.getSymbol().getName().equals("B") ? 8 : 0;
-            if (!bfs(player.getX(), player.getY(), goalX, players)) {
-                return true;
+            int goalX;
+            int goalY;
+
+            // Original logic for players "A" and "B" remains the same
+            if (player.getSymbol().getName().equals("A") || player.getSymbol().getName().equals("B")) {
+                goalX = player.getSymbol().getName().equals("A") ? 8 : 0;
+                if (!bfs(player.getX(), player.getY(), goalX, players, true)) { // goal on the X axis
+                    return true;
+                }
+            } else {
+                // New logic for players "C" and "D", goal is on the Y axis
+                goalY = player.getSymbol().getName().equals("C") ? 8 : 0;
+                if (!bfs(player.getX(), player.getY(), goalY, players, false)) { // goal on the Y axis
+                    return true;
+                }
             }
         }
         return false;
     }
 
     // A bfs algo to find a path to the goal
-    private boolean bfs(int startX, int startY, int goalX, Player[] players) {
+    private boolean bfs(int startX, int startY, int goal, Player[] players, boolean goalOnX) {
         boolean[][] visited = new boolean[size][size];
         Queue<int[]> queue = new LinkedList<>();
         queue.add(new int[]{startX, startY});
@@ -187,7 +199,9 @@ public class QuoridorBoard {
             int x = current[0];
             int y = current[1];
 
-            if (x == goalX) {
+            if (goalOnX && x == goal) { // Goal is on the X axis
+                return true;
+            } else if (!goalOnX && y == goal) { // Goal is on the Y axis
                 return true;
             }
 

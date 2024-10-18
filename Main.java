@@ -1,4 +1,5 @@
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
 
 public class Main {
@@ -11,8 +12,10 @@ public class Main {
         //Supposed there are 2 teams competing with each others.
         Team team1 = new Team("Team 1", new ArrayList<>());
         Team team2 = new Team("Team 2", new ArrayList<>());
+        Team team3 = new Team("Team 3", new ArrayList<>());
+        Team team4 = new Team("Team 4", new ArrayList<>());
 
-        Team[] teams = {team1, team2};
+        Team[] teams = {team1, team2, team3, team4};
         while (true) {
             // show menu
             System.out.println("Let's play a game! Please choose a game type(input an integer):");

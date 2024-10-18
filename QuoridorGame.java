@@ -32,7 +32,7 @@ public class QuoridorGame extends TicTacToeGame {
 
             System.out.println("Quoridor Game starts!");
             for (int i = 0; i < playerCount; i++) {
-                System.out.println("\"" + players[i].getSymbol().getName() + "\" represents team " + (i + 1));
+                System.out.println("\"" + players[i].getSymbol().getName() + "\" represents player" + players[i].getPlayerNumber());
             }
             board.display();
 
@@ -190,8 +190,7 @@ public class QuoridorGame extends TicTacToeGame {
 
                 for (Player otherPlayer : players) {
                     if (otherPlayer != player && otherPlayer != opponent) {
-                        if ((otherPlayer.getX() == jumpX && otherPlayer.getY() == jumpY) ||
-                                (otherPlayer.getX() == newX && otherPlayer.getY() == newY)) {
+                        if (otherPlayer.getX() == jumpX && otherPlayer.getY() == jumpY) {
                             System.out.println("Invalid jump: another player is in the path.");
                             return false;
                         }
@@ -282,12 +281,12 @@ public class QuoridorGame extends TicTacToeGame {
     }
 
     public void printSummary() {
-        for (Player player : players) {
-            System.out.println("Player '" + player.getPlayerNumber() + "' plays piece: '" + player.getSymbol().getName() + "' " + (player.hasWon() ? "win" : "lose"));
-        }
-        for (Team team : teams) {
-            System.out.println("----------------" + team.getName() + "----------------");
-            System.out.println("Total win: " + team.getWinCount());
+        for (int i = 0; i < players.length; ++i) {
+            System.out.println("----------------" + teams[i].getName() + "----------------");
+            for (Player player : teams[i].getPlayers()) {
+                System.out.println("Player '" + player.getPlayerNumber() + "' plays piece: '" + player.getSymbol().getName() + "' " + (player.hasWon() ? "win" : "lose"));
+            }
+            System.out.println("Total win: " + teams[i].getWinCount());
         }
     }
 

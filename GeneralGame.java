@@ -20,17 +20,17 @@ public abstract class GeneralGame {
 
     // display the match details of the players in this round of the game
     public void printSummary() {
-        for (Team team : teams) {
-            System.out.println("----------------" + team.getName() + "----------------");
-            for (Player player : team.getPlayers()) {
+        for (int i = 0; i < 2; i++) {
+            System.out.println("----------------" + teams[i].getName() + "----------------");
+            for (Player player : teams[i].getPlayers()) {
                 if (player.isDraw()) {
                     System.out.println("Player '" + player.getPlayerNumber() + "' plays piece: '" + player.getSymbol().getName() + "' draw");
                 } else {
                     System.out.println("Player '" + player.getPlayerNumber() + "' plays piece: '" + player.getSymbol().getName() + "' " + (player.hasWon() ? "win" : "lose"));
                 }
             }
-            System.out.println("Total win: " + team.getWinCount());
-            System.out.println("Total draw: " + team.getDrawCount());
+            System.out.println("Total win: " + teams[i].getWinCount());
+            System.out.println("Total draw: " + teams[i].getDrawCount());
         }
     }
 

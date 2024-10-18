@@ -67,12 +67,12 @@ public class OrderAndChaosGame extends TicTacToeGame {
 
     //print the Order and Chaos summary table
     public void printSummary() {
-        for (Team team : teams) {
-            System.out.println("----------------" + team.getName() + "----------------");
-            for (Player player : team.getPlayers()) {
+        for (int i = 0; i < 2; ++i) {
+            System.out.println("----------------" + teams[i].getName() + "----------------");
+            for (Player player : teams[i].getPlayers()) {
                 System.out.println("Player '" + player.getPlayerNumber() + "' plays piece: '' " + (player.hasWon() ? "win" : "lose"));
             }
-            System.out.println("Total win: " + team.getWinCount());
+            System.out.println("Total win: " + teams[i].getWinCount());
         }
     }
 
