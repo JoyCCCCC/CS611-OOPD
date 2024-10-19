@@ -9,7 +9,7 @@ public class TicTacToeGame extends GeneralGame {
 
     public TicTacToeGame(Team[] teams) {
         super(teams);
-        this.board = new GeneralBoard(boardSize,boardSize);
+        this.board = new TicTacToeBoard(boardSize,boardSize);
         scanner = new Scanner(System.in);
     }
 
@@ -69,7 +69,7 @@ public class TicTacToeGame extends GeneralGame {
 
             // if continue the game, reset the board
             if (keepPlaying) {
-                this.board = new GeneralBoard(board.getSize(),board.getSize());
+                this.board = new TicTacToeBoard(board.getSize(),board.getSize());
             }
             flag--;
         }
@@ -86,7 +86,7 @@ public class TicTacToeGame extends GeneralGame {
             this.boardSize = scanner.nextInt();
         }
         // create the new board
-        this.board = new GeneralBoard(boardSize,boardSize);
+        this.board = new TicTacToeBoard(boardSize,boardSize);
     }
 
     //input player numbers and assign them to each team

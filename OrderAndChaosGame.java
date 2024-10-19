@@ -5,7 +5,7 @@ public class OrderAndChaosGame extends TicTacToeGame {
     private Scanner scanner;
     public OrderAndChaosGame(Team[] teams) {
         super(teams);
-        this.board = new GeneralBoard(6,5);
+        this.board = new TicTacToeBoard(6,5);
         scanner = new Scanner(System.in);
     }
 
@@ -59,7 +59,7 @@ public class OrderAndChaosGame extends TicTacToeGame {
 
             // if continue the game, reset the board
             if (keepPlaying) {
-                this.board = new GeneralBoard(6,5);  // reset the board
+                this.board = new TicTacToeBoard(6,5);  // reset the board
             }
         }
         resetAllTeamsStatistics(); //If the player chooses not to continue the game, return to the main menu and reset the statistics.

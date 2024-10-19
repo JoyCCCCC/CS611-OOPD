@@ -72,14 +72,14 @@ public class Player {
     }
 
     //ask the player to make a move
-    public void makeMove(GeneralBoard board) {
+    public void makeMove(TicTacToeBoard board) {
         Scanner scanner = new Scanner(System.in);
         int pos;
         do {
             System.out.println("Player " + playerNumber + " (" + team.getName() + ")" + " (" + symbol.getName() + "), please enter the index of cell：");
             pos = scanner.nextInt();
-        } while (!board.isMoveValid(pos));
-        board.makeMove(pos, symbol);
+        } while (!board.isValidMove(pos,0,0,0,new Player[]{}));
+        board.makeMove(pos, 0, symbol);
     }
 
     public int getX() {

@@ -85,7 +85,7 @@ public class QuoridorGame extends TicTacToeGame {
         int[][] startingPositions = {{0, 4}, {8, 4}, {4, 0}, {4, 8}};
         for (int i = 0; i < players.length; i++) {
             players[i].move(startingPositions[i][0], startingPositions[i][1]);
-            board.placePlayer(players[i].getX(), players[i].getY(), players[i].getSymbol());
+            board.makeMove(players[i].getX(), players[i].getY(), players[i].getSymbol());
         }
     }
     // Choose the start player
@@ -160,11 +160,11 @@ public class QuoridorGame extends TicTacToeGame {
                             break;
                         }
                     }
-                    // If jump logic is applied and invalid, no not move
+                    // If jump logic is applied and invalid, not move
                     if (!isOccupied) {
-                        board.placePlayer(player.getX(), player.getY(), new Piece("."));
+                        board.makeMove(player.getX(), player.getY(), new Piece("."));
                         player.move(newX, newY);
-                        board.placePlayer(newX, newY, player.getSymbol());
+                        board.makeMove(newX, newY, player.getSymbol());
                         validMove = true;
                     } else {
                         System.out.println("Invalid move: another player is in the path.");
@@ -198,9 +198,9 @@ public class QuoridorGame extends TicTacToeGame {
                 }
                 // Try to jump
                 if (board.isValidMove(opponent.getX(), opponent.getY(), jumpX, jumpY, players)) {
-                    board.placePlayer(player.getX(), player.getY(), new Piece("."));
+                    board.makeMove(player.getX(), player.getY(), new Piece("."));
                     player.move(jumpX, jumpY);
-                    board.placePlayer(jumpX, jumpY, player.getSymbol());
+                    board.makeMove(jumpX, jumpY, player.getSymbol());
                     return true;
                 } else {
                     int leftMoveX;
@@ -231,14 +231,14 @@ public class QuoridorGame extends TicTacToeGame {
                         System.out.println("Choose jump direction (l for left or up, r for right or down):");
                         String direction = scanner.nextLine();
                         if (direction.equals("l") && canJumpLeft) {
-                            board.placePlayer(player.getX(), player.getY(), new Piece("."));
+                            board.makeMove(player.getX(), player.getY(), new Piece("."));
                             player.move(leftMoveX, leftMoveY);
-                            board.placePlayer(leftMoveX, leftMoveY, player.getSymbol());
+                            board.makeMove(leftMoveX, leftMoveY, player.getSymbol());
                             return true;
                         } else if (direction.equals("r") && canJumpRight) {
-                            board.placePlayer(player.getX(), player.getY(), new Piece("."));
+                            board.makeMove(player.getX(), player.getY(), new Piece("."));
                             player.move(rightMoveX, rightMoveY);
-                            board.placePlayer(rightMoveX, rightMoveY, player.getSymbol());
+                            board.makeMove(rightMoveX, rightMoveY, player.getSymbol());
                             return true;
                         } else {
                             System.out.println("Invalid jump direction. Please choose again.");

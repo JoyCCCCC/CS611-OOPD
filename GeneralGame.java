@@ -1,5 +1,5 @@
 public abstract class GeneralGame {
-    protected GeneralBoard board;
+    protected TicTacToeBoard board;
     protected Team[] teams;
 
     public GeneralGame(Team[] teams) {

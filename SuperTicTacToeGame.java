@@ -38,7 +38,7 @@ public class SuperTicTacToeGame extends TicTacToeGame {
                 }while(boardLabel < 'A' || boardLabel > 'I');
 
                 // get the mini board based on the input
-                GeneralBoard miniBoard = getMiniBoard(boardLabel);
+                TicTacToeBoard miniBoard = getMiniBoard(boardLabel);
                 // Check if the game on mini board is over (win or draw)
                 if (miniBoard.checkForWinner() || miniBoard.isFull()) {
                     System.out.println("This board is already decided. Please choose another.");
@@ -52,13 +52,13 @@ public class SuperTicTacToeGame extends TicTacToeGame {
                 // If a winner has been determined on the mini board, the entire mini board is marked as that player's piece.
                 if (miniBoard.checkForWinner()) {
                     System.out.println("Player " + currentPlayer.getPlayerNumber() + " (" + currentPlayer.getTeam().getName() + ") won on board " + boardLabel + "!");
-                    superBoard.makeMove(boardLabelToIndex(boardLabel)+1,currentPlayer.getSymbol());
+                    superBoard.makeMove(boardLabelToIndex(boardLabel)+1,0,currentPlayer.getSymbol());
                 }
 
                 //I chose "D" to indicate a draw on this mini board.
                 if(miniBoard.isFull()) {
                     System.out.println("There is a draw on Board " + boardLabel + "!");
-                    superBoard.makeMove(boardLabelToIndex(boardLabel)+1,drawPiece);
+                    superBoard.makeMove(boardLabelToIndex(boardLabel)+1,0,drawPiece);
                 }
 
                 // Check if the super board has a win.
@@ -95,9 +95,9 @@ public class SuperTicTacToeGame extends TicTacToeGame {
     }
 
     // Get the corresponding mini board according to the input characters A-I.
-    private GeneralBoard getMiniBoard(char boardLabel) {
+    private TicTacToeBoard getMiniBoard(char boardLabel) {
         int boardIndex = boardLabelToIndex(boardLabel);
-        GeneralBoard[][] miniBoards = superBoard.getMiniBoards();
+        TicTacToeBoard[][] miniBoards = superBoard.getMiniBoards();
         int row = boardIndex / 3; // the row of super board
         int col = boardIndex % 3; // the column of super board
         return miniBoards[row][col];

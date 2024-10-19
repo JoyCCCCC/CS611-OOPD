@@ -1,7 +1,7 @@
 import java.util.LinkedList;
 import java.util.Queue;
 
-public class QuoridorBoard {
+public class QuoridorBoard implements GeneralBoard {
     private final int size = 9;
     private final Tile[][] board;
     private final Wall[][] walls;
@@ -24,7 +24,7 @@ public class QuoridorBoard {
         }
     }
 
-    public void placePlayer(int x, int y, Piece piece) {
+    public void makeMove(int x, int y, Piece piece) {
         if (piece.getName().equals(".")) {
             board[x * 2][y * 2] = new Tile(".");
         } else {
