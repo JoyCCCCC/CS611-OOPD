@@ -6,8 +6,8 @@ public class Player {
     private Team team;    // The corresponding team.
     private boolean won;  // Record whether the player won a specific game.
     private boolean draw; // Record whether the player had a draw.
-    private int x, y;
-    private int wallNumber;
+    private int x, y; // The coordinates of the player's position are recorded in Quoridor.
+    private int wallNumber; // The number of walls players have in Quoridor.
 
 
     public Player(Piece symbol, Team team, Integer playerNumber) {
@@ -82,31 +82,33 @@ public class Player {
         board.makeMove(pos, 0, symbol);
     }
 
+    // Get the horizontal coordinate of the player's position.
     public int getX() {
         return x;
     }
 
+    // Get the vertical coordinate of the player's position.
     public int getY() {
         return y;
     }
 
+    // Player makes a move.
     public void move(int newX, int newY) {
         this.x = newX;
         this.y = newY;
     }
 
+    // Get the number of walls left for each player.
     public int getWallNumber() {
         return wallNumber;
     }
 
+    // Set the original wall number for the players.
     public void setWallNumber(int wallNumber) {
         this.wallNumber = wallNumber;
     }
 
-    public void incrementWallNumber() {
-        wallNumber++;
-    }
-
+    // If the player places a wall, then decrease the wall number.
     public void decrementWallNumber() {
         wallNumber--;
     }
